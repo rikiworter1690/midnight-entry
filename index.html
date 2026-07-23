@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>ミッドナイト マンスリートーナメント エントリー状況</title>
+
+  <!-- PWA 設定 -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#10104a">
+  
+  <!-- iOS (Safari) 向けPWA対応 -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="ミッドナイト">
+  <link rel="apple-touch-icon" href="midnight-entry-192.png">
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: #0a0a2e;
+    }
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- GASのWebアプリURLを指定してください -->
+  <iframe src="https://script.google.com/macros/s/AKfycbwy2sLir4dqg5CTtcIMMV2opq-Zjuhue8WOnj5p-OtOuyPJN5__WHZRuKSXd3bzyKXvUg/exec" id="app-frame" allow="geolocation; microphone; camera"></iframe>
+
+  <script>
+    // Service Worker の登録
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then((reg) => console.log('Service Worker registered:', reg.scope))
+          .catch((err) => console.error('Service Worker registration failed:', err));
+      });
+    }
+  </script>
+</body>
+</html>

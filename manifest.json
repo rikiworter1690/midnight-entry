@@ -1,0 +1,24 @@
+{
+  "name": "ミッドナイト エントリー状況",
+  "short_name": "ミッドナイト",
+  "description": "ミッドナイト マンスリートーナメントのエントリー状況確認アプリ",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0a0a2e",
+  "theme_color": "#10104a",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "midnight-entry-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "midnight-entry-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
