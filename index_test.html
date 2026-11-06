@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>ミッドナイト マンスリートーナメント</title>
+
+  <!-- PWA 設定 -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#10104a">
+
+  <!-- iOS (Safari) 向けPWA対応 -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="ミッドナイト">
+  <link rel="apple-touch-icon" href="midnight-entry-192.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-deep:        #0a0a2e;
+      --bg-mid:         #10104a;
+      --bg-card:        #141458;
+      --bg-card-hover:  #1a1a6e;
+      --bg-nav:         #1e1e7a;
+      --border:         #2a2a8a;
+      --border-accent:  #3a3ab0;
+      --yellow:         #ffee00;
+      --gold:           #f0c030;
+      --text-primary:   #f0f0ff;
+      --text-muted:     #c0c8e8;
+      --sidebar-w:      280px;
+      --safe-top:       env(safe-area-inset-top, 0px);
+      --safe-bottom:    env(safe-area-inset-bottom, 0px);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: var(--bg-deep);
+      color: var(--text-primary);
+      font-family: 'Noto Sans JP', sans-serif;
+    }
+    button { font-family: inherit; cursor: pointer; border: none; }
+
+    .app { display: flex; width: 100%; height: 100%; }
+
+    /* ---------- メニューボタン（共通） ---------- */
+    .menu-btn {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      width: 100%;
+      padding: 16px 18px;
+      text-align: left;
+      color: var(--text-primary);
+      font-size: 15px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      background: linear-gradient(160deg, var(--bg-card) 0%, #111150 100%);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      transition: transform .15s, border-color .15s, background .15s, box-shadow .15s, color .15s;
+    }
+    .menu-btn .ico {
+      flex: none;
+      width: 36px; height: 36px;
+      display: grid; place-items: center;
+      border-radius: 10px;
+      background: rgba(255,238,0,0.08);
+      border: 1px solid rgba(240,192,48,0.35);
+      font-size: 18px;
+    }
+    .menu-btn .label { flex: 1; line-height: 1.35; }
+    .menu-btn .sub {
+      display: block;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+    .menu-btn .arrow { color: var(--gold); opacity: .6; transition: transform .15s, opacity .15s; }
+    .menu-btn:hover, .menu-btn:focus-visible {
+      background: linear-gradient(160deg, var(--bg-card-hover) 0%, #16168a 100%);
+      border-color: var(--gold);
+      box-shadow: 0 0 18px rgba(240,192,48,0.25);
+      transform: translateY(-1px);
+      outline: none;
+    }
+    .menu-btn:hover .arrow { transform: translateX(3px); opacity: 1; }
+    .menu-btn:active { transform: translateY(0) scale(.99); }
+    .menu-btn.active {
+      color: var(--yellow);
+      border-color: var(--yellow);
+      background: linear-gradient(160deg, #20208a 0%, #1a1a7a 100%);
+      box-shadow: 0 0 20px rgba(255,238,0,0.22), inset 3px 0 0 var(--yellow);
+    }
+    .menu-btn.bonus { border-style: dashed; }
+    .menu-btn.bonus .ico { background: rgba(255,255,255,0.06); border-color: var(--border-accent); }
+
+    .menu-section {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      color: var(--text-muted);
+      margin: 6px 4px 0;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .menu-section::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, var(--border-accent), transparent); }
+
+    .menu-list { display: flex; flex-direction: column; gap: 12px; }
+
+    /* ---------- サイドバー（PC） ---------- */
+    .sidebar {
+      flex: none;
+      width: var(--sidebar-w);
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      padding: 22px 18px;
+      overflow-y: auto;
+      background: linear-gradient(180deg, var(--bg-mid) 0%, var(--bg-deep) 100%);
+      border-right: 1px solid var(--border);
+      box-shadow: 4px 0 24px rgba(0,0,0,0.4);
+      z-index: 5;
+    }
+    .sidebar::before {
+      content: "";
+      display: block;
+      height: 2px;
+      margin: -22px -18px 0;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    }
+    .brand {
+      background: #000;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 6px;
+      cursor: pointer;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .brand:hover { border-color: var(--gold); box-shadow: 0 0 16px rgba(240,192,48,0.25); }
+    .brand img { display: block; width: 100%; height: auto; border-radius: 6px; }
+    .sidebar-foot {
+      margin-top: auto;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 11px; letter-spacing: .16em;
+      color: var(--text-muted); text-align: center; opacity: .7;
+    }
+
+    /* ---------- メイン領域 ---------- */
+    .main { position: relative; flex: 1; min-width: 0; height: 100%; display: flex; flex-direction: column; }
+    .viewport { position: relative; flex: 1; min-height: 0; }
+
+    .home {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 28px;
+      padding: 24px;
+      overflow-y: auto;
+      background:
+        radial-gradient(ellipse 70% 55% at 50% 40%, rgba(58,58,176,0.35) 0%, transparent 70%),
+        var(--bg-deep);
+    }
+    .home .hero {
+      width: min(560px, 90%);
+      background: #000;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 8px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.55), 0 0 40px rgba(58,58,176,0.25);
+    }
+    .home .hero img { display: block; width: 100%; height: auto; border-radius: 8px; }
+    .home .menu-list { display: none; width: min(420px, 100%); }
+
+    .frame-wrap { position: absolute; inset: 0; display: none; background: var(--bg-deep); }
+    .frame-wrap iframe { width: 100%; height: 100%; border: none; display: block; background: #fff; }
+    .loading {
+      position: absolute; inset: 0; display: grid; place-items: center;
+      font-family: 'Rajdhani', sans-serif; letter-spacing: .25em; color: var(--gold);
+      pointer-events: none; transition: opacity .3s;
+    }
+    .loading.done { opacity: 0; }
+
+    .topbar { display: none; }
+    .drawer, .scrim { display: none; }
+
+    /* ---------- スマホ ---------- */
+    @media (max-width: 820px) {
+      .sidebar { display: none; }
+
+      .home { justify-content: flex-start; padding-top: calc(28px + var(--safe-top)); padding-bottom: calc(28px + var(--safe-bottom)); }
+      .home .hero { margin-top: 4vh; }
+      .home .menu-list { display: flex; }
+
+      .app.in-page .topbar {
+        display: flex; align-items: center; gap: 12px; flex: none;
+        height: calc(52px + var(--safe-top));
+        padding: var(--safe-top) 12px 0;
+        background: linear-gradient(180deg, var(--bg-nav), var(--bg-mid));
+        border-bottom: 1px solid var(--border);
+        position: relative; z-index: 10;
+      }
+      .topbar::after {
+        content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 1px;
+        background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      }
+      .hamburger {
+        width: 40px; height: 40px; border-radius: 10px;
+        display: grid; place-items: center;
+        background: rgba(255,238,0,0.08);
+        border: 1px solid rgba(240,192,48,0.45);
+        transition: background .15s, border-color .15s;
+      }
+      .hamburger:active { background: rgba(255,238,0,0.2); border-color: var(--yellow); }
+      .hamburger span, .hamburger span::before, .hamburger span::after {
+        display: block; width: 18px; height: 2px; background: var(--yellow); border-radius: 2px; position: relative;
+        transition: transform .2s, background .2s;
+      }
+      .hamburger span::before, .hamburger span::after { content: ""; position: absolute; left: 0; }
+      .hamburger span::before { top: -6px; }
+      .hamburger span::after  { top: 6px; }
+      .topbar .title {
+        flex: 1; min-width: 0; font-size: 15px; font-weight: 700; letter-spacing: .05em;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      }
+
+      .scrim {
+        display: block; position: fixed; inset: 0; z-index: 20;
+        background: rgba(0,0,10,0.6); opacity: 0; pointer-events: none; transition: opacity .25s;
+      }
+      .drawer {
+        display: flex; flex-direction: column; gap: 14px;
+        position: fixed; top: 0; left: 0; bottom: 0; z-index: 30;
+        width: min(310px, 84vw);
+        padding: calc(18px + var(--safe-top)) 16px calc(18px + var(--safe-bottom));
+        overflow-y: auto;
+        background: linear-gradient(180deg, var(--bg-mid), var(--bg-deep));
+        border-right: 1px solid var(--border-accent);
+        box-shadow: 8px 0 30px rgba(0,0,0,0.6);
+        transform: translateX(-102%); transition: transform .25s ease;
+      }
+      .drawer .brand { cursor: default; }
+      .app.menu-open .drawer { transform: translateX(0); }
+      .app.menu-open .scrim { opacity: 1; pointer-events: auto; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app" id="app">
+
+    <!-- PC: 左メニューカラム -->
+    <aside class="sidebar" id="sidebar">
+      <div class="brand" data-home title="ホームへ"><img src="midhead.gif" alt="ミッドナイト"></div>
+      <div class="menu-section">MENU</div>
+      <nav class="menu-list" data-menu></nav>
+      <div class="sidebar-foot">MIDNIGHT MONTHLY</div>
+    </aside>
+
+    <div class="main">
+      <!-- スマホ: ページ表示中のみ出るトップバー -->
+      <header class="topbar">
+        <button class="hamburger" id="menuToggle" aria-label="メニューを開く"><span></span></button>
+        <div class="title" id="topTitle"></div>
+      </header>
+
+      <div class="viewport">
+        <!-- ホーム（PC: gif中央 / スマホ: gif+ボタン） -->
+        <section class="home" id="home">
+          <div class="hero"><img src="midhead.gif" alt="ミッドナイト"></div>
+          <nav class="menu-list" data-menu></nav>
+        </section>
+
+        <!-- リンク先表示 -->
+        <section class="frame-wrap" id="frameWrap">
+          <div class="loading" id="loading">LOADING...</div>
+          <iframe id="app-frame" title="コンテンツ" allow="geolocation; microphone; camera"></iframe>
+        </section>
+      </div>
+    </div>
+
+    <!-- スマホ: ドロワーメニュー -->
+    <div class="scrim" id="scrim"></div>
+    <aside class="drawer" id="drawer">
+      <div class="brand" data-home title="ホームへ"><img src="midhead.gif" alt="ミッドナイト"></div>
+      <div class="menu-section">MENU</div>
+      <nav class="menu-list" data-menu data-drawer></nav>
+    </aside>
+  </div>
+
+  <script>
+    const LINKS = [
+      { id: 'entry',   icon: '📋', label: 'エントリー状況確認',       sub: 'ENTRY STATUS',
+        url: 'https://script.google.com/macros/s/AKfycbwy2sLir4dqg5CTtcIMMV2opq-Zjuhue8WOnj5p-OtOuyPJN5__WHZRuKSXd3bzyKXvUg/exec' },
+      { id: 'monthly', icon: '🏆', label: 'マンスリー進行状況確認',   sub: 'MONTHLY PROGRESS',
+        url: 'https://script.google.com/macros/s/AKfycbxgl_hidE-k3jRyowCzwh8nIZaIZSZEimS23KVB_OfqxTH5kKZ6CsyWdIAJUMVFTN-u/exec?page=viewer' },
+      { id: 'qr',      icon: '🔳', label: 'QRコード生成',             sub: 'QR GENERATOR',
+        url: 'https://rikiworter1690.github.io/midnight/qr_code_generator.html' },
+      { id: 'mico',    icon: '🎁', label: 'おまけ：mico PAマンスリー状況確認', sub: 'BONUS / MICO PA', bonus: true,
+        url: 'https://script.google.com/macros/s/AKfycbw2ALdupMg_A_dOl7TnVALyTlACAqwW3_uohzYRC5qWZFcXzkehPKITx3wMKp6Ge2Xj/exec' }
+    ];
+
+    const $ = (s) => document.querySelector(s);
+    const app = $('#app'), frame = $('#app-frame'), frameWrap = $('#frameWrap'),
+          home = $('#home'), loading = $('#loading'), topTitle = $('#topTitle');
+
+    // メニューボタン生成（サイドバー / ホーム / ドロワー）
+    document.querySelectorAll('[data-menu]').forEach((nav) => {
+      LINKS.forEach((l) => {
+        const b = document.createElement('button');
+        b.className = 'menu-btn' + (l.bonus ? ' bonus' : '');
+        b.dataset.id = l.id;
+        b.innerHTML = `<span class="ico">${l.icon}</span>
+          <span class="label">${l.label}<span class="sub">${l.sub}</span></span>
+          <span class="arrow">›</span>`;
+        b.addEventListener('click', () => open(l.id));
+        nav.appendChild(b);
+      });
+      if (nav.hasAttribute('data-drawer')) {
+        const h = document.createElement('button');
+        h.className = 'menu-btn';
+        h.innerHTML = `<span class="ico">🏠</span><span class="label">ホーム<span class="sub">HOME</span></span><span class="arrow">›</span>`;
+        h.addEventListener('click', goHome);
+        nav.prepend(h);
+      }
+    });
+    document.querySelectorAll('[data-home]').forEach((el) => el.addEventListener('click', goHome));
+
+    function setMenu(openState) {
+      app.classList.toggle('menu-open', openState);
+      $('#menuToggle').setAttribute('aria-label', openState ? 'メニューを閉じる' : 'メニューを開く');
+    }
+
+    function open(id) {
+      const l = LINKS.find((x) => x.id === id);
+      if (!l) return;
+      setMenu(false);
+      loading.classList.remove('done');
+      frame.onload = () => loading.classList.add('done');
+      if (frame.dataset.id !== id) { frame.src = l.url; frame.dataset.id = id; }
+      else loading.classList.add('done');
+      frameWrap.style.display = 'block';
+      home.style.display = 'none';
+      app.classList.add('in-page');
+      topTitle.textContent = l.label;
+      document.querySelectorAll('.menu-btn').forEach((b) => b.classList.toggle('active', b.dataset.id === id));
+      history.replaceState(null, '', '#' + id);
+    }
+
+    function goHome() {
+      setMenu(false);
+      frameWrap.style.display = 'none';
+      home.style.display = '';
+      app.classList.remove('in-page');
+      frame.removeAttribute('src'); delete frame.dataset.id;
+      document.querySelectorAll('.menu-btn').forEach((b) => b.classList.remove('active'));
+      history.replaceState(null, '', location.pathname);
+    }
+
+    $('#menuToggle').addEventListener('click', () => setMenu(!app.classList.contains('menu-open')));
+    $('#scrim').addEventListener('click', () => setMenu(false));
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') setMenu(false); });
+
+    // ハッシュ指定で直接開く（例: index.html#qr）
+    if (location.hash) open(location.hash.slice(1));
+
+    // Service Worker の登録
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then((reg) => console.log('Service Worker registered:', reg.scope))
+          .catch((err) => console.error('Service Worker registration failed:', err));
+      });
+    }
+  </script>
+</body>
+</html>
