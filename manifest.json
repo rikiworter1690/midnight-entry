@@ -1,7 +1,7 @@
 {
-  "name": "ミッドナイト エントリー状況",
+  "name": "ミッドナイトアプリ",
   "short_name": "ミッドナイト",
-  "description": "ミッドナイト マンスリートーナメントのエントリー状況確認アプリ",
+  "description": "ミッドナイトの各種機能の統合アプリ",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#0a0a2e",
